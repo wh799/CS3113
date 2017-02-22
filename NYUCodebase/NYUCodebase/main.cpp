@@ -1,5 +1,5 @@
 #ifdef _WINDOWS
-	#include <GL/glew.h>
+#include <GL/glew.h>
 #endif
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -11,9 +11,9 @@
 
 
 #ifdef _WINDOWS
-	#define RESOURCE_FOLDER ""
+#define RESOURCE_FOLDER ""
 #else
-	#define RESOURCE_FOLDER "NYUCodebase.app/Contents/Resources/"
+#define RESOURCE_FOLDER "NYUCodebase.app/Contents/Resources/"
 #endif
 
 SDL_Window* displayWindow;
@@ -24,7 +24,7 @@ GLuint LoadTexture(const char *filePath) {
 	if (image == NULL) {
 		std::cout << "Unable to load image. Make sure the path is correct\n";
 		assert(false);
-	}          
+	}
 	GLuint retTexture;
 	glGenTextures(1, &retTexture);
 	glBindTexture(GL_TEXTURE_2D, retTexture);
@@ -35,51 +35,97 @@ GLuint LoadTexture(const char *filePath) {
 	return retTexture;
 }
 
+class Paddle {
+public:
+	Paddle(GLuint paddle){}
+
+	float left;
+	float right;
+	float top;
+	float bottom;
+};
+
+class Ball {
+public:
+	Ball(GLuint pong){}
+	float pos_x = 0.0f;
+	float pos_y = 0.0f;
+	float speed = 3.0f;
+};
+
+
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	displayWindow = SDL_CreateWindow("My Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 360, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
-	#ifdef _WINDOWS
-		glewInit();
-	#endif
+#ifdef _WINDOWS
+	glewInit();
+#endif
 
-// Before Loop
+	// Before Loop
 
-		glViewport(0, 0, 640, 360);
+	glViewport(0, 0, 640, 360);
 
-		ShaderProgram program("vertex_textured.glsl", "fragment_textured.glsl");
-		
-		GLuint blueChip = LoadTexture("chipBlueWhite.png");
-		GLuint blackChip = LoadTexture("chipBlackWhite.png");
-		GLuint greenChip = LoadTexture("chipGreenWhite.png");
+	ShaderProgram program("vertex_textured.glsl", "fragment_textured.glsl");
 
-		float lastFrameTicks = 0.0f;
+	GLuint bluePad = LoadTexture("laserBlue14.png");
+	GLuint redPong = LoadTexture("laserRed10.png");
+	GLuint greenPad = LoadTexture("laserGreen06.png");
 
-		Matrix projectionMatrix;
-		Matrix viewMatrix;
+	Paddle leftPaddle(greenPad);
+	Paddle rightPaddle(bluePad);
+	Ball pong(redPong);
 
-		Matrix blueModel;
-		Matrix blackModel;
-		Matrix greenModel;
+	float lastFrameTicks = 0.0f;
+
+	Matrix projectionMatrix;
+	Matrix viewMatrix;
+
+	Matrix rightMatrix;
+	Matrix pongMatrix;
+	Matrix leftMatrix;
 
 
-		projectionMatrix.setOrthoProjection(-3.55f, 3.55f, -2.0f, 2.0f, -1.0f, 1.0f);
+	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
 
-		glUseProgram(program.programID);
+	glUseProgram(program.programID);
 
+	float angle = 0.0f;
+	float blueY = 0.0f;
+	float greenY = 0.0f;
 
-		float angle = 0.0f;
-
-// During Loop
+	// During Loop
 
 	SDL_Event event;
 	bool done = false;
-	while (!done){
+	while (!done) {
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				done = true;
+			}
+			if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+				leftPaddle.top += 1.0f;
+				leftPaddle.bottom += 1.0f;
+				leftMatrix.Translate(0.0f, 1.0f, 0.0f);
+			}
+			else if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+				leftPaddle.top -= 1.0f;
+				leftPaddle.bottom -= 1.0f;
+				leftMatrix.Translate(0.0f, -1.0f, 0.0f);
+			}
+
+			// Right Paddle
+			if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
+				rightPaddle.top += 1.0f;
+				rightPaddle.bottom += 1.0f;
+				rightMatrix.Translate(0.0f, 1.0f, 0.0f);
+			}
+			else if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+				rightPaddle.top -= 1.0f;
+				rightPaddle.bottom -= 1.0f;
+				rightMatrix.Translate(0.0f, -1.0f, 0.0f);
 			}
 		}
 
@@ -87,18 +133,13 @@ int main(int argc, char *argv[])
 		float elapsed = ticks - lastFrameTicks;
 		lastFrameTicks = ticks;
 
-		angle += elapsed;
-
-
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		blueModel.identity();
-		blueModel.Translate(2.0, 0.0, 0.0);
-		program.setModelMatrix(blueModel);
-
-		glBindTexture(GL_TEXTURE_2D, blueChip);
-		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
+// Right Paddle
+		program.setModelMatrix(rightMatrix);
+		glBindTexture(GL_TEXTURE_2D, bluePad);
+		float Rightvertices[] = { 2.4f, -0.5f, 2.3f, -0.5f, 2.3f, 0.5f, 2.3f, 0.5f, 2.4f, 0.5f, 2.4f, -0.5f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, Rightvertices);
 		glEnableVertexAttribArray(program.positionAttribute);
 		float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
@@ -107,45 +148,92 @@ int main(int argc, char *argv[])
 		glDisableVertexAttribArray(program.positionAttribute);
 		glDisableVertexAttribArray(program.texCoordAttribute);
 
+//Left Paddle
+
+		program.setModelMatrix(leftMatrix);
+		glBindTexture(GL_TEXTURE_2D, greenPad);
+		float Leftvertices[] = { -4.4f, -0.5f, -4.3f, -0.5f, -4.3f, 0.5f, -4.3f, 0.5f, -4.4f, 0.5f, -4.4f, -0.5f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, Leftvertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+
+//Ball
+		
+		pongMatrix.identity();
+		pongMatrix.Scale(0.3f, 0.3f, 1.0f);
+		program.setModelMatrix(pongMatrix);
+
+		glBindTexture(GL_TEXTURE_2D, redPong);
+		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+		
+		const Uint8 *keys = SDL_GetKeyboardState(NULL);
+
+		if (keys[SDL_SCANCODE_UP]) {
+			blueY += elapsed * 2;
+		}
+		if (keys[SDL_SCANCODE_DOWN]) {
+			blueY -= elapsed * 2;
+		}
+		if (keys[SDL_SCANCODE_W]) {
+			greenY += elapsed * 2;
+		}
+		if (keys[SDL_SCANCODE_S]) {
+			greenY -= elapsed * 2;
+		}
+
+		rightMatrix.identity();
+		rightMatrix.Translate(1.0, blueY, 1.0);
+
+		leftMatrix.identity();
+		leftMatrix.Translate(1.0, greenY, 1.0);
+		
+		pongMatrix.identity();
+		pongMatrix.Translate(1.0, cos(45) + pong.speed * elapsed, 1.0);
+		
+		program.setModelMatrix(rightMatrix);
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
 
-		blackModel.identity();
-		blackModel.Rotate(angle * 45.0f * (3.1415926f/180.0f));
-		program.setModelMatrix(blackModel);
 
-		glBindTexture(GL_TEXTURE_2D, blackChip);
-//		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
-		glEnableVertexAttribArray(program.positionAttribute);
-//		float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
+		if (pong.pos_x <= leftPaddle.right && pong.pos_y <= leftPaddle.top && pong.pos_y >= leftPaddle.bottom ||
+			pong.pos_x >= rightPaddle.left && pong.pos_y <= rightPaddle.top && pong.pos_y >= rightPaddle.bottom) {
+			pongMatrix.Translate(-pong.speed * elapsed, pong.speed * elapsed, 0.0f);
+		}
+		else if (pong.pos_x >= rightPaddle.right) {
+			pongMatrix.Translate(-pong.pos_x, -pong.pos_y, 0.0f);
+		}
+		else if (pong.pos_x <= leftPaddle.left) {
+			pongMatrix.Translate(-pong.pos_x, -pong.pos_y, 0.0f);
+		}			
+		else if (pong.pos_y + 0.1f >= 2.0f || pong.pos_y - 0.1f <= -2.0f) {
+			pongMatrix.Translate(pong.speed * elapsed, -pong.speed * elapsed, 0.0f);
+		}			
+		else {
+			pongMatrix.Translate(pong.speed * elapsed, pong.speed * elapsed, 0.0f);
+		}
 
-		greenModel.identity();
-		greenModel.Translate(-2.0, 0.0, 0.0);
-		program.setModelMatrix(greenModel);
-
-		glBindTexture(GL_TEXTURE_2D, greenChip);
-//		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
-		glEnableVertexAttribArray(program.positionAttribute);
-//		float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
+		glUseProgram(program.programID);
 
 		SDL_GL_SwapWindow(displayWindow);
 
 		glClear(GL_COLOR_BUFFER_BIT);
-		SDL_GL_SwapWindow(displayWindow);
 	}
 
 	SDL_Quit();
 	return 0;
 }
+
