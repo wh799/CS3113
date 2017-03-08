@@ -1,0 +1,15 @@
+﻿  main.cpp
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(46): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(104): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(105): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(198): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(198): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(224): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(225): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(236): warning C4838: conversion from 'double' to 'GLfloat' requires a narrowing conversion
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(236): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(405): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(411): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\homework 3\nyucodebase\main.cpp(412): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\Homework 3\Debug\NYUCodebase.exe
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\Homework 3\Debug\NYUCodebase.pdb (Full PDB)
