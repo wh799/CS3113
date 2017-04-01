@@ -1,0 +1,15 @@
+﻿  main.cpp
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(122): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(127): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(128): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(266): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(296): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(304): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(313): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(358): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(413): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(444): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(446): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\homework 4\nyucodebase\main.cpp(468): warning C4018: '<': signed/unsigned mismatch
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\Homework 4\Debug\NYUCodebase.exe
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\Homework 4\Debug\NYUCodebase.pdb (Full PDB)
