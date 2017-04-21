@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream> 
 #include <sstream> 
+#include <SDL_mixer.h>
 using namespace std;
 
 #ifdef _WINDOWS
@@ -331,11 +332,16 @@ int main(int argc, char *argv[])
 
 	glViewport(0, 0, 960, 540);
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
-
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 	float lastFrameTicks = 0.0f;
 
 	GLuint sheetSprite = LoadTexture("spritesheet.png");
-
+	Mix_Chunk *jump;
+	jump = Mix_LoadWAV("jump.wav");
+	Mix_Chunk *pickup;
+	pickup = Mix_LoadWAV("pickup.wav");
+	Mix_Music *music;
+	music = Mix_LoadMUS("song.mp3");
 	std::ifstream infile("mymap.txt");
 	std::string line;
 	while (getline(infile, line)) {
@@ -366,7 +372,7 @@ int main(int argc, char *argv[])
 	SDL_Event event;
 	bool done = false;
 	while (!done) {
-
+		Mix_PlayMusic(music, -1);
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float elapsed = ticks - lastFrameTicks;
 		lastFrameTicks = ticks;
@@ -397,6 +403,7 @@ int main(int argc, char *argv[])
 					}
 					else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
 						p1vy = 3;
+						Mix_PlayChannel(-1, jump, 0);
 					}
 				}
 				else if (event.type == SDL_KEYUP) {
@@ -446,6 +453,7 @@ int main(int argc, char *argv[])
 					for (int j = 0; j < entities.size(); ++j) {
 						if (entities[j].type == "Jewel" && entityCollision(entities[i], entities[j])) {
 							entities.erase(entities.begin() + j);
+							Mix_PlayChannel(-1, pickup, 0);
 							break;
 						}
 					}
