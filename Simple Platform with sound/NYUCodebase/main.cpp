@@ -274,10 +274,10 @@ void worldToTileCoordinates(float worldX, float worldY, int *gridX, int *gridY) 
 }
 
 
-void collisionx(Entity &entity) {
+void collisionx(Entity &entity, int num) {
 	int gridX, gridY;
 	worldToTileCoordinates(entity.position.x + TILE_SIZE / 2, entity.position.y, &gridX, &gridY);
-	if (!(gridX < 0 || gridX > mapWidth || gridY < 0 || gridY > mapHeight) && levelData[gridY][gridX] < 100)
+	if (!(gridX < 0 || gridX > mapWidth || gridY < 0 || gridY > mapHeight) && levelData[gridY][gridX] < num)
 	{
 		entity.position.x += entity.position.x + TILE_SIZE / 2 - gridX * TILE_SIZE - TILE_SIZE / 2;
 		entity.velocity.x = 0;
@@ -285,7 +285,7 @@ void collisionx(Entity &entity) {
 	}
 }
 
-void collisiony(Entity &entity) {
+void collisiony(Entity &entity, int num) {
 	int gridX, gridY;
 	float top = 0;
 	if (entity.type == "Player") {
@@ -293,7 +293,7 @@ void collisiony(Entity &entity) {
 	}
 
 	worldToTileCoordinates(entity.position.x + TILE_SIZE / 2, entity.position.y, &gridX, &gridY);
-	if (!(gridX < 0 || gridX > mapWidth || gridY < 0 || gridY > mapHeight) && levelData[gridY][gridX] < 100)
+	if (!(gridX < 0 || gridX > mapWidth || gridY < 0 || gridY > mapHeight) && levelData[gridY][gridX] < num)
 	{
 		entity.position.y += -1 * (entity.position.y) - gridY * TILE_SIZE + 0.001;
 		entity.velocity.y = 0;
@@ -301,7 +301,7 @@ void collisiony(Entity &entity) {
 	}
 
 	worldToTileCoordinates(entity.position.x + TILE_SIZE / 2, entity.position.y + TILE_SIZE + top, &gridX, &gridY);
-	if (!(gridX < 0 || gridX > mapWidth || gridY < 0 || gridY > mapHeight) && levelData[gridY][gridX] < 100)
+	if (!(gridX < 0 || gridX > mapWidth || gridY < 0 || gridY > mapHeight) && levelData[gridY][gridX] < num)
 	{
 		entity.position.y += -1 * (entity.position.y + TILE_SIZE + top) - gridY * TILE_SIZE - TILE_SIZE - 0.001;
 		entity.velocity.y = 0;
@@ -324,14 +324,14 @@ bool entityCollision(Entity e1, Entity e2) {
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("My Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 960, 540, SDL_WINDOW_OPENGL);
+	displayWindow = SDL_CreateWindow("My Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 720, 360, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 #ifdef _WINDOWS
 	glewInit();
 #endif
 
-	glViewport(0, 0, 960, 540);
+	glViewport(0, 0, 720, 360);
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
@@ -369,6 +369,7 @@ int main(int argc, char *argv[])
 
 	float p1vy = 0;
 	float p1ax = 0;
+	int jewelCount = 3;
 
 	SDL_Event event;
 	bool done = false;
@@ -397,10 +398,10 @@ int main(int argc, char *argv[])
 				}
 				else if (event.type == SDL_KEYDOWN) {
 					if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-						p1ax = 5;
+						p1ax = 2;
 					}
 					else if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
-						p1ax = -5;
+						p1ax = -2;
 					}
 					else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
 						p1vy = 3;
@@ -441,11 +442,11 @@ int main(int argc, char *argv[])
 
 				entities[i].position.x += entities[i].velocity.x * FIXED_TIMESTEP;
 				if (!entities[i].isStatic) {
-					collisionx(entities[i]);
+					collisionx(entities[i], 193);
 				}
 				entities[i].position.y += entities[i].velocity.y * FIXED_TIMESTEP;
 				if (!entities[i].isStatic) {
-					collisiony(entities[i]);
+					collisiony(entities[i], 193);
 				}
 			}
 
@@ -454,7 +455,11 @@ int main(int argc, char *argv[])
 					for (int j = 0; j < entities.size(); ++j) {
 						if (entities[j].type == "Jewel" && entityCollision(entities[i], entities[j])) {
 							entities.erase(entities.begin() + j);
+							jewelCount--;
 							Mix_PlayChannel(-1, pickup, 0);
+							if (jewelCount == 0) {
+								done = true;
+							}
 							break;
 						}
 					}
@@ -471,7 +476,7 @@ int main(int argc, char *argv[])
 					program.setModelMatrix(modelMatrix);
 					program.setProjectionMatrix(projectionMatrix);
 					program.setViewMatrix(viewMatrix);
-					DrawSpriteSheetSprite(program, levelData[y][x], 43, 23, sheetSprite);
+					DrawSpriteSheetSprite(program, levelData[y][x], 30, 30, sheetSprite);
 				}
 			}
 			for (int i = 0; i < entities.size(); ++i) {
@@ -482,16 +487,19 @@ int main(int argc, char *argv[])
 				program.setProjectionMatrix(projectionMatrix);
 				program.setViewMatrix(viewMatrix);
 				if (entities[i].type == "Player") {
-					DrawSpriteSheetSprite(program, 21, 30, 16, sheetSprite);
+					DrawSpriteSheetSprite(program, 27, 30, 30, sheetSprite);
 
 					modelMatrix.identity();
 					modelMatrix.Translate(entities[i].position.x, entities[i].position.y + mapHeight*TILE_SIZE + TILE_SIZE, 0);
 
 					viewMatrix.identity();
 					viewMatrix.Translate(-entities[i].position.x, -1 * (entities[i].position.y + mapHeight*TILE_SIZE), 0);
+					if (entities[i].position.y < -10) {
+						done = true;
+					}
 				}
 				if (entities[i].type == "Jewel")
-					DrawSpriteSheetSprite(program, 145, 30, 16, sheetSprite);
+					DrawSpriteSheetSprite(program, 379, 30, 30, sheetSprite);
 			}
 			SDL_GL_SwapWindow(displayWindow);
 	}

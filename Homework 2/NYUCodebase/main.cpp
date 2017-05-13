@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 
 	float angle = 0.0f;
 	float blueY = 0.0f;
+	float blueX = 0.0f;
 	float greenY = 0.0f;
 
 	// During Loop
@@ -104,28 +105,6 @@ int main(int argc, char *argv[])
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				done = true;
-			}
-			if (event.key.keysym.scancode == SDL_SCANCODE_W) {
-				leftPaddle.top += 1.0f;
-				leftPaddle.bottom += 1.0f;
-				leftMatrix.Translate(0.0f, 1.0f, 0.0f);
-			}
-			else if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-				leftPaddle.top -= 1.0f;
-				leftPaddle.bottom -= 1.0f;
-				leftMatrix.Translate(0.0f, -1.0f, 0.0f);
-			}
-
-			// Right Paddle
-			if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
-				rightPaddle.top += 1.0f;
-				rightPaddle.bottom += 1.0f;
-				rightMatrix.Translate(0.0f, 1.0f, 0.0f);
-			}
-			else if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-				rightPaddle.top -= 1.0f;
-				rightPaddle.bottom -= 1.0f;
-				rightMatrix.Translate(0.0f, -1.0f, 0.0f);
 			}
 		}
 
@@ -188,15 +167,16 @@ int main(int argc, char *argv[])
 		if (keys[SDL_SCANCODE_DOWN]) {
 			blueY -= elapsed * 2;
 		}
-		if (keys[SDL_SCANCODE_W]) {
-			greenY += elapsed * 2;
+		if (keys[SDL_SCANCODE_RIGHT]) {
+			blueX += elapsed * 2;
 		}
-		if (keys[SDL_SCANCODE_S]) {
-			greenY -= elapsed * 2;
+		if (keys[SDL_SCANCODE_LEFT]) {
+			blueX -= elapsed * 2;
 		}
 
+
 		rightMatrix.identity();
-		rightMatrix.Translate(1.0, blueY, 1.0);
+		rightMatrix.Translate(blueX, blueY, 1.0);
 
 		leftMatrix.identity();
 		leftMatrix.Translate(1.0, greenY, 1.0);

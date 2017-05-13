@@ -1,0 +1,16 @@
+﻿  main.cpp
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(111): warning C4018: '<': signed/unsigned mismatch
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(163): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(168): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(169): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(307): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(337): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(345): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(354): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(517): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(523): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(557): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(565): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\proj\nyucodebase\main.cpp(427): warning C4101: 'jewelCount': unreferenced local variable
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\proj\Debug\NYUCodebase.exe
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\proj\Debug\NYUCodebase.pdb (Full PDB)

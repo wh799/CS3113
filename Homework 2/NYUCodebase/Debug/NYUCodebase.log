@@ -1,3 +1,5 @@
 ﻿  main.cpp
-  NYUCodebase.vcxproj -> C:\Users\Will\Gamepro\CS3113\project_template\Windows\NYUCodebase\Debug\NYUCodebase.exe
-  NYUCodebase.vcxproj -> C:\Users\Will\Gamepro\CS3113\project_template\Windows\NYUCodebase\Debug\NYUCodebase.pdb (Full PDB)
+c:\users\will\desktop\cs3113\homework 2\nyucodebase\main.cpp(91): warning C4305: 'argument': truncation from 'double' to 'float'
+c:\users\will\desktop\cs3113\homework 2\nyucodebase\main.cpp(185): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\Homework 2\Debug\NYUCodebase.exe
+  NYUCodebase.vcxproj -> C:\Users\Will\Desktop\CS3113\Homework 2\Debug\NYUCodebase.pdb (Full PDB)
