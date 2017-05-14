@@ -291,7 +291,6 @@ void collisionx(Entity &entity, int num) {
 		{
 			entity.position.x += entity.position.x + TILE_SIZE / 2 - gridX * TILE_SIZE - TILE_SIZE / 2;
 			entity.velocity.x = 8.5;
-//			entity.acceleration.x = -2;
 		}
 	}
 }
@@ -347,6 +346,7 @@ int main(int argc, char *argv[])
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
 	float lastFrameTicks = 0.0f;
+
 	GLuint sheetSprite = LoadTexture("spritesheet.png");
 	Mix_Chunk *jump;
 	jump = Mix_LoadWAV("jump.wav");
@@ -354,126 +354,174 @@ int main(int argc, char *argv[])
 	pickup = Mix_LoadWAV("pickup.wav");
 	Mix_Music *music;
 	music = Mix_LoadMUS("song3.mp3");
-	float screenShakeValue = 0.0;
-	float screenShakeSpeed = 5.0f;
-	float screenShakeIntensity = .070f;
+	std::ifstream infile("mymap3.txt");
+	std::string line;
+	while (getline(infile, line)) {
+		if (line == "[header]") {
+			if (!readHeader(infile)) {
+				return 0;
+			}
+		}
+		else if (line == "[layer]") {
+			readLayerData(infile);
+		}
+		else if (line == "[Entity]") {
+			readEntityData(infile);
+		}
+	}
+	Mix_PlayMusic(music, -1);
+	Matrix projectionMatrix;
+	Matrix modelMatrix;
+	Matrix viewMatrix;
+	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
+	glUseProgram(program.programID);
+
+
+	float p1vy = 0;
+	float p1ax = 0;
+	int jewelCount = 4;
 
 	SDL_Event event;
 	bool done = false;
 	while (!done) {
+
+		float ticks = (float)SDL_GetTicks() / 1000.0f;
+		float elapsed = ticks - lastFrameTicks;
+		lastFrameTicks = ticks;
+
+		// 60 FPS (1.0f/60.0f)
+#define FIXED_TIMESTEP 0.0166666f
+#define MAX_TIMESTEPS 6
+		float fixedElapsed = elapsed;
+		if (fixedElapsed > FIXED_TIMESTEP * MAX_TIMESTEPS) {
+			fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEPS;
+		}
+		while (fixedElapsed >= FIXED_TIMESTEP) {
+			fixedElapsed -= FIXED_TIMESTEP;
+			//Update(FIXED_TIMESTEP);
+		}
+		//Update(fixedElapsed);
+
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				done = true;
 			}
+			else if (event.type == SDL_KEYDOWN) {
+				if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+					p1ax = 3;
+				}
+				else if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+					p1ax = -3;
+				}
+				else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+					p1vy = 4;
+					Mix_PlayChannel(-1, jump, 0);
+				}
+			}
+			else if (event.type == SDL_KEYUP) {
+				if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+					p1ax = 0;
+				}
+				else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+					p1vy = 0;
+				}
+			}
 		}
-		float ticks = (float)SDL_GetTicks() / 1000.0f;
-		float elapsed = ticks - lastFrameTicks;
-		lastFrameTicks = ticks;
-		screenShakeValue += elapsed;
 
-		program.setModelMatrix(modelMatrix);
-		program.setProjectionMatrix(projectionMatrix);
-		program.setViewMatrix(viewMatrix);
+
+		for (int i = 0; i < entities.size(); ++i) {
+			if (entities[i].type == "Player") {
+				entities[i].acceleration.x = p1ax;
+				if (entities[i].collidedBottom) {
+					entities[i].velocity.y = p1vy;
+				}
+			}
+			if (entities[i].type == "Enemy") {
+				entities[i].acceleration.x = -2;
+			}
+			if (!entities[i].isStatic) {
+				entities[i].acceleration.y = -5;
+			}
+			entities[i].collidedTop = false;
+			entities[i].collidedBottom = false;
+			entities[i].collidedLeft = false;
+			entities[i].collidedRight = false;
+
+			entities[i].velocity.x = lerp(entities[i].velocity.x, 0.0f, FIXED_TIMESTEP * 5);
+			entities[i].velocity.y = lerp(entities[i].velocity.y, 0.0f, FIXED_TIMESTEP * 1);
+
+			entities[i].velocity.x += entities[i].acceleration.x * FIXED_TIMESTEP;
+			entities[i].velocity.y += entities[i].acceleration.y * FIXED_TIMESTEP;
+
+			entities[i].position.x += entities[i].velocity.x * FIXED_TIMESTEP;
+			if (!entities[i].isStatic) {
+				collisionx(entities[i], 193);
+			}
+			entities[i].position.y += entities[i].velocity.y * FIXED_TIMESTEP;
+			if (!entities[i].isStatic) {
+				collisiony(entities[i], 193);
+			}
+		}
+
+		for (int i = 0; i < entities.size(); ++i) {
+			if (entities[i].type == "Player") {
+				for (int j = 0; j < entities.size(); ++j) {
+					if (entities[j].type == "Jewel" && entityCollision(entities[i], entities[j])) {
+						entities.erase(entities.begin() + j);
+						jewelCount--;
+						Mix_PlayChannel(-1, pickup, 0);
+						if (jewelCount == 0) {
+							done = true;
+						}
+						break;
+					}
+					if (entities[j].type == "Enemy" && entityCollision(entities[i], entities[j])) {
+						done = true;
+					}
+				}
+				break;
+			}
+		}
+
 
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		if (screenShakeValue < 6.1f)
-		{
-			viewMatrix.Translate(0.0f, sin(screenShakeValue * screenShakeSpeed)* screenShakeIntensity, 0.0f);
+		for (int y = 0; y < mapHeight; ++y) {
+			for (int x = 0; x < mapWidth; ++x) {
+				modelMatrix.identity();
+				modelMatrix.Translate(x*TILE_SIZE, (mapHeight - y - 1)*TILE_SIZE, 0);
+				program.setModelMatrix(modelMatrix);
+				program.setProjectionMatrix(projectionMatrix);
+				program.setViewMatrix(viewMatrix);
+				DrawSpriteSheetSprite(program, levelData[y][x], 30, 30, sheetSprite);
+			}
 		}
-		else
-			viewMatrix.identity();
+		for (int i = 0; i < entities.size(); ++i) {
+			modelMatrix.identity();
+			modelMatrix.Translate(entities[i].position.x, entities[i].position.y + mapHeight*TILE_SIZE, 0);
 
-		modelMatrix.identity();
-		program.setModelMatrix(modelMatrix);
-		float bg[] = { -16.0, -9.0, 16.0, 9.0, -16.0, 9.0, 16.0, 9.0, -16.0, -9.0, 16.0, -9.0 };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, bg);
-		glEnableVertexAttribArray(program.positionAttribute);
+			program.setModelMatrix(modelMatrix);
+			program.setProjectionMatrix(projectionMatrix);
+			program.setViewMatrix(viewMatrix);
+			if (entities[i].type == "Player") {
+				DrawSpriteSheetSprite(program, 27, 30, 30, sheetSprite);
 
-		float bgTex[] = { 0.0, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, bgTex);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-		glUseProgram(program.programID);
+				modelMatrix.identity();
+				modelMatrix.Translate(entities[i].position.x, entities[i].position.y + mapHeight*TILE_SIZE + TILE_SIZE, 0);
 
-		glBindTexture(GL_TEXTURE_2D, bg1);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
+				viewMatrix.identity();
+				viewMatrix.Translate(-entities[i].position.x, -1 * (entities[i].position.y + mapHeight*TILE_SIZE), 0);
+				if (entities[i].position.y < -5.5) {
+					done = true;
+				}
+			}
+			if (entities[i].type == "Jewel")
+				DrawSpriteSheetSprite(program, 379, 30, 30, sheetSprite);
+			if (entities[i].type == "Enemy") {
+				DrawSpriteSheetSprite(program, 269, 30, 30, sheetSprite);
+			}
 
-		modelMatrix.identity();
-		modelMatrix.Translate(-12.0f, 5.0f, 1.0f);
-		program.setModelMatrix(modelMatrix);
-		DrawText(fontTex, "Treasure Hunter", 1.9f, -0.195f, program);
-		modelMatrix.identity();
-		modelMatrix.Translate(-11.0f, 4.0f, 1.0f);
-		program.setModelMatrix(modelMatrix);
-		DrawText(fontTex, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~", .6f, -0.09f, program);
-
-
-		modelMatrix.identity();
-		modelMatrix.Translate(-8.30f, -5.50f, 1.0f);
-		modelMatrix.Scale(.65, .65, 1);
-		program.setModelMatrix(modelMatrix);
-		DrawText(fontTex, "Press Enter To Start", 1.6f, -0.29f, program);
-
-		modelMatrix.identity();
-		modelMatrix.Translate(-5.8f, -7.00f, 1.0f);
-		modelMatrix.Scale(.65, .65, 1);
-		program.setModelMatrix(modelMatrix);
-		DrawText(fontTex, "Press ESC To Exit", 1.2f, -0.11f, program);
-
-		modelMatrix.identity();
-		modelMatrix.Translate(0.0, -1.00f, 1.0f);
-		modelMatrix.Rotate(angle);
-		program.setModelMatrix(modelMatrix);
-		float vertices[] = { -3.5f, -3.5f, 3.5f, 3.5f, -3.5f, 3.5f, 3.5f, 3.5f, -3.5f, -3.5f, 3.5f, -3.5f };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
-		glEnableVertexAttribArray(program.positionAttribute);
-
-		float texCoords[] = { 0.0, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-		glUseProgram(program.programID);
-
-		glBindTexture(GL_TEXTURE_2D, pirate);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
-
-		modelMatrix.identity();
-		modelMatrix.Translate(-7.0, -1.00f, 1.0f);
-		program.setModelMatrix(modelMatrix);
-		float vertices2[] = { -3.0f, -3.0f, 3.0f, 3.0f, -3.0f, 3.0f, 3.0f, 3.0f, -3.0f, -3.0f, 3.0f, -3.0f };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices2);
-		glEnableVertexAttribArray(program.positionAttribute);
-
-		float texCoords2[] = { 0.0, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords2);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-		glUseProgram(program.programID);
-
-		glBindTexture(GL_TEXTURE_2D, dig);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
-
-		modelMatrix.identity();
-		modelMatrix.Translate(7.0, -1.00f, 1.0f);
-		modelMatrix.Rotate(1.5f);
-		program.setModelMatrix(modelMatrix);
-		float vertices3[] = { -3.0f, -3.0f, 3.0f, 3.0f, -3.0f, 3.0f, 3.0f, 3.0f, -3.0f, -3.0f, 3.0f, -3.0f };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices3);
-		glEnableVertexAttribArray(program.positionAttribute);
-
-		float texCoords3[] = { 0.0, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords3);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-		glUseProgram(program.programID);
-
-		glBindTexture(GL_TEXTURE_2D, dig);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
+		}
+		SDL_GL_SwapWindow(displayWindow);
 	}
 
 	SDL_Quit();

@@ -397,16 +397,23 @@ int main(int argc, char *argv[])
 
 	GLuint sheetSprite = LoadTexture("spritesheet.png");
 	GLuint font1 = LoadTexture("font1.png");
-	GLuint yoshi = LoadTexture("yoshi.png");
 	Mix_Chunk *jump;
 	jump = Mix_LoadWAV("jump.wav");
 	Mix_Chunk *pickup;
 	pickup = Mix_LoadWAV("pickup.wav");
 	Mix_Music *music;
 	music = Mix_LoadMUS("startMusic.mp3");
+	Mix_Music *song1;
+	song1 = Mix_LoadMUS("song.mp3");
+	Mix_Music *song2;
+	song2 = Mix_LoadMUS("song2.mp3");
+	Mix_Music *song3;
+	song3 = Mix_LoadMUS("song3.mp3");
+
+
 	float screenShakeValue = 0.0;
 	float screenShakeSpeed = 5.0f;
-	float screenShakeIntensity = .070f;
+	float screenShakeIntensity = .01f;
 
 
 	Mix_PlayMusic(music, -1);
@@ -461,9 +468,8 @@ int main(int argc, char *argv[])
 				{
 					if (keys[SDL_SCANCODE_RETURN] || keys[SDL_SCANCODE_RETURN2])
 					{
-						state = STATE_LEVEL_ONE;
+//						state = STATE_LEVEL_ONE;
 						state = STATE_FINAL;
-						Mix_PlayMusic(music, -1);
 					}
 
 					if (keys[SDL_SCANCODE_ESCAPE])
@@ -474,15 +480,91 @@ int main(int argc, char *argv[])
 				}
 				case STATE_LEVEL_ONE:
 				{
-					
+					if (gameDone = true) {
+						state = STATE_LEVEL_TWO;
+						gameDone = false;
+					}
+					if (event.type == SDL_KEYDOWN) {
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+							p1ax = 2;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							p1ax = -2;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							p1vy = 3;
+							Mix_PlayChannel(-1, jump, 0);
+						}
+					}
+					else if (event.type == SDL_KEYUP) {
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							p1ax = 0;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							p1vy = 0;
+						}
+					}
 				}
 				case STATE_LEVEL_TWO:
 				{
-					
+					if (gameDone = true) {
+						state = STATE_LEVEL_THREE;
+						gameDone = false;
+					}
+					if (event.type == SDL_KEYDOWN) {
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+							p1ax = 2;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							p1ax = -2;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							p1vy = 3;
+							Mix_PlayChannel(-1, jump, 0);
+						}
+					}
+					else if (event.type == SDL_KEYUP) {
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							p1ax = 0;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							p1vy = 0;
+						}
+					}
 				}
 				case STATE_LEVEL_THREE:
 				{
-					
+					if (gameDone = true) {
+						state = STATE_LEVEL_THREE;
+					}
+					if (event.type == SDL_KEYDOWN) {
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+							p1ax = 2;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							p1ax = -2;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							p1vy = 3;
+							Mix_PlayChannel(-1, jump, 0);
+						}
+					}
+					else if (event.type == SDL_KEYUP) {
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT || event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							p1ax = 0;
+						}
+						else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							p1vy = 0;
+						}
+					}
+				}
+				case STATE_FINAL:
+				{
+					if (keys[SDL_SCANCODE_ESCAPE])
+					{
+						done = true;
+					}
+					break;
 				}
 			}
 		}
@@ -539,15 +621,16 @@ int main(int argc, char *argv[])
 			}
 			case STATE_LEVEL_ONE:
 			{
-				
+				readMap("mymap");
+
 			}
 			case STATE_LEVEL_TWO:
 			{
-				
+				readMap("mymap2new");
 			}
 			case STATE_LEVEL_THREE:
 			{
-			
+				readMap("mymap3");
 			}
 			case STATE_FINAL: 
 			{
